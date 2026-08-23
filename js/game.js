@@ -483,6 +483,8 @@ NeoGame.prototype.fireLaser=function(){
   this.lcd=0.27;
   var p=this.paddle;
   this.lasers.push({x:p.x-p.w/2+7,y:p.y-8},{x:p.x+p.w/2-7,y:p.y-8});
+  /* Tir central si le palet est élargi pour éviter les angles morts */
+  if(p.w>110){this.lasers.push({x:p.x,y:p.y-8});}
   this.audio.laser();
 };
 
