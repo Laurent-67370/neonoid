@@ -99,6 +99,140 @@ window.LEVELS=[
     "...rrXXrrXX...",
     "....SSSSSS....",
     "....gXXggXXg.."
+  ]},
+  /* ═══════════════════════════════════════════════
+     10 nouveaux niveaux — fun & conviviaux
+     ═══════════════════════════════════════════════ */
+  {name:"L'arc-en-ciel",map:[
+    "r..o..y..g..b.",
+    ".r..o..y..g..b",
+    "v..c..r..o..y.",
+    ".v..c..r..o..y",
+    "g..b..v..c..r.",
+    ".g..b..v..c..r"
+  ]},
+  {name:"Le pacman",map:[
+    "yyyyyyyyyyyyyy",
+    "y............y",
+    "y.ooo....ooo.y",
+    "y.o..........y",
+    "y...oooooo...y",
+    "y...o....o...y",
+    "y...o.SSSo...y",
+    "y...oooooo...y",
+    "y............y",
+    "yyyyyyyyyyyyyy"
+  ]},
+  {name:"Le flipper",map:[
+    "G............G",
+    ".S..........S.",
+    "..S........S..",
+    "...S......S...",
+    "....r....r....",
+    "....S....S....",
+    "...S......S...",
+    "..S........S..",
+    ".S..........S.",
+    "G...DDDDDD..G."
+  ]},
+  {name:"Le labyrinthe",map:[
+    "GGGGGGGGGGGGGG",
+    "G..r..g..b..G.",
+    "G.Gr.Gg.Gb.GG.",
+    "G.G.GG.GG.GGG.",
+    "G.G..G..G..G..",
+    "G.SS.GG.GG.G..",
+    "G..G..X..G..G.",
+    "G.GG.GG.GG.G..",
+    "G..D..G..D..G.",
+    "GGGGGGGGGGGGGG"
+  ]},
+  {name:"La montagne",map:[
+    "......yy......",
+    ".....oyyo.....",
+    "....oooyoo....",
+    "...rooooorr...",
+    "..rroooo rr...",
+    "..g rooooor...",
+    ".gg rrrooor...",
+    ".ggg rrooorr..",
+    "gggg rrrroorr.",
+    "bbbbbGGGbbbbbb"
+  ]},
+  {name:"Le smiley",map:[
+    "....yyyyyy....",
+    "..yy......yy..",
+    ".y..........y.",
+    "y..rr....rr..y",
+    "y..rr....rr..y",
+    "y............y",
+    "y..g......g..y",
+    "y...gggggg...y",
+    ".y..........y.",
+    "..yy......yy..",
+    "....yyyyyy...."
+  ]},
+  {name:"La croix",map:[
+    "......gg......",
+    "......gg......",
+    "......gg......",
+    "rrrrrrggrrrrrr",
+    ".rrrrrggrrrrr.",
+    "..rrrrggrrrr..",
+    "......SS......",
+    "..bbbbssbbbb..",
+    ".bbbbbssbbbbb.",
+    "......oo......",
+    "......oo......"
+  ]},
+  {name:"Le circuit",map:[
+    "SS..........SS",
+    "S..rrrrrrrr..S",
+    "S.r........r.S",
+    "S.r.SSSSSS.r.S",
+    "S.r.S....S.r.S",
+    "S.r.S.XX.S.r.S",
+    "S.r.S....S.r.S",
+    "S.r.SSSSSS.r.S",
+    "S.r........r.S",
+    "S..DDDDDDDD..S",
+    "SS..........SS"
+  ]},
+  {name:"Les bulles",map:[
+    "...oo....bb...",
+    ".ooooo..bbbbb.",
+    "..ooo....bb...",
+    "....g....y....",
+    "...ggg..yyy...",
+    "..gggg..yyyy..",
+    "...ggg..yyy...",
+    "....v....r....",
+    "..vvvv..rrrr..",
+    "...vv....rr...",
+    ".....c........",
+    "....ccc......."
+  ]},
+  {name:"Le damier géant",map:[
+    "rrrr....bbbb..",
+    "rrrr....bbbb..",
+    "....yyyy....vv",
+    "....yyyy....vv",
+    "gggg....cccc..",
+    "gggg....cccc..",
+    "....rrrr....bb",
+    "....rrrr....bb"
+  ]},
+  {name:"Le cœur géant",map:[
+    "..rrr....rrr..",
+    ".rrrrr..rrrrr.",
+    "rrrSSrrrrSSrrr",
+    "rrSDDDSrrSDDrr",
+    "rrSDDDDSrrSDDr",
+    ".rrSDDDSrrrrr.",
+    "..rrSSSSSrrr..",
+    "...rrrSSrrr...",
+    "....rrrrrr....",
+    "......rr......"
   ]}
 ];
 
