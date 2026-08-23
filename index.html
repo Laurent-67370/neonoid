@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#05070f">
+<title>NÉONOID — Casse-briques néon</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧱</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="game" width="600" height="800"></canvas>
+
+  <div class="screen" id="scr-title">
+    <div class="version">v1.0</div>
+    <h1 class="logo">NÉONOID</h1>
+    <p class="tag">CASSE-BRIQUES NÉON · HOMMAGE À L'AMIGA</p>
+    <p id="best-line"></p>
+    <button class="btn primary" id="btn-play">▶ JOUER</button>
+    <button class="btn" id="btn-help">❓ AIDE</button>
+    <button class="btn" id="btn-scores">🏆 HIGH SCORES</button>
+    <button class="btn" id="btn-sound">🔊 SON</button>
+    <p id="tip"></p>
+  </div>
+
+  <div class="screen hidden" id="scr-help">
+    <h2>❓ AIDE</h2>
+    <div class="help-box">
+      <h3>🎮 Contrôles</h3>
+      <table class="pow">
+        <tr><td>🖱️</td><td>Souris ou doigt : déplacer le palet</td></tr>
+        <tr><td>⌨️</td><td><span class="kbd">←</span><span class="kbd">→</span> ou <span class="kbd">A</span><span class="kbd">D</span> au clavier</td></tr>
+        <tr><td>🚀</td><td><span class="kbd">Espace</span> / clic / tap : lancer la balle · tirer le laser</td></tr>
+        <tr><td>⏸️</td><td><span class="kbd">P</span> ou <span class="kbd">Échap</span> : pause · <span class="kbd">M</span> : son</td></tr>
+      </table>
+      <h3>🎁 Bonus (capsules à attraper)</h3>
+      <table class="pow">
+        <tr><td><span class="cap" style="background:#22d3ee;color:#083344">E</span></td><td>Palet élargi</td></tr>
+        <tr><td><span class="cap" style="background:#a78bfa;color:#1e1b4b">M</span></td><td>Multi-balles (×3)</td></tr>
+        <tr><td><span class="cap" style="background:#fb7185;color:#4c0519">L</span></td><td>Lasers (tirez avec Espace)</td></tr>
+        <tr><td><span class="cap" style="background:#4ade80;color:#052e16">C</span></td><td>Palet collant : visez vos lancers</td></tr>
+        <tr><td><span class="cap" style="background:#38bdf8;color:#082f49">S</span></td><td>Balle ralentie</td></tr>
+        <tr><td><span class="cap" style="background:#fb923c;color:#431407">B</span></td><td>Boule de feu : traverse les briques 🔥</td></tr>
+        <tr><td><span class="cap" style="background:#f472b6;color:#500724">+</span></td><td>Vie supplémentaire ❤</td></tr>
+      </table>
+      <h3>☠️ Malus (capsules rouges/jaunes)</h3>
+      <table class="pow">
+        <tr><td><span class="cap" style="background:#ef4444;color:#450a0a">!</span></td><td>Palet rétréci</td></tr>
+        <tr><td><span class="cap" style="background:#facc15;color:#422006">F</span></td><td>Balle accélérée</td></tr>
+      </table>
+      <h3>🧱 Briques spéciales</h3>
+      <table class="pow">
+        <tr><td><span class="cap" style="background:#cbd5e1;color:#334155">S</span></td><td>Argentée : 2 coups (3 en fin de jeu)</td></tr>
+        <tr><td><span class="cap" style="background:#fbbf24;color:#451a03">G</span></td><td>Dorée : indestructible</td></tr>
+        <tr><td><span class="cap" style="background:#fb7185;color:#4c0519">X</span></td><td>Explosive 💥 : détruit les voisines en chaîne</td></tr>
+      </table>
+      <h3>🔥 Astuces</h3>
+      <ul style="margin:4px 0;padding-left:18px">
+        <li>Combos : enchaînez les briques sans toucher le palet, jusqu'à ×8 !</li>
+        <li>Touchez la balle avec les bords du palet pour viser en diagonale.</li>
+        <li>+1 vie tous les 10 000 points.</li>
+        <li>Le palet collant permet de viser chaque lancer précisément.</li>
+      </ul>
+    </div>
+    <button class="btn small" id="btn-help-back">← RETOUR</button>
+  </div>
+
+  <div class="screen hidden" id="scr-scores">
+    <h2>🏆 HIGH SCORES</h2>
+    <ol id="scores-list"></ol>
+    <button class="btn small" id="btn-end-scores-back">← RETOUR</button>
+    <button class="btn small danger" id="btn-scores-reset">🗑 EFFACER</button>
+  </div>
+
+  <div class="screen hidden" id="scr-pause">
+    <h2>⏸ PAUSE</h2>
+    <button class="btn primary" id="btn-resume">▶ REPRENDRE</button>
+    <button class="btn" id="btn-quit">🏠 QUITTER</button>
+  </div>
+
+  <div class="screen hidden" id="scr-end">
+    <h2 id="end-title">GAME OVER</h2>
+    <p class="stat" id="end-stats"></p>
+    <div id="name-form" class="hidden">
+      <p class="stat" style="color:#fbbf24">🏆 TOP 5 ! Ton nom :</p>
+      <input id="name-in" maxlength="3" autocomplete="off" spellcheck="false" placeholder="AAA">
+      <br>
+      <button class="btn small primary" id="btn-name-ok">✓ VALIDER</button>
+    </div>
+    <button class="btn primary hidden" id="btn-replay">↻ REJOUER</button>
+    <button class="btn" id="btn-menu2">🏠 MENU</button>
+  </div>
+
+  <div id="banner"><div id="banner-main"></div><div id="banner-sub"></div></div>
+  <div id="toast"></div>
+</div>
+
+<script src="js/audio.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
