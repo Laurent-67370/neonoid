@@ -250,6 +250,15 @@ NeoGame.prototype.hitWalls=function(b){
     if(b.y-b.r<TOP){b.y=TOP+b.r;if(b.vy<0)b.vy=-b.vy;hit=true;}
   }
   if(hit){
+    /* Anti-boucle horizontale : garantir un vy minimum après rebond mur */
+    var mul=this.speedMul();
+    var minVy=0.18*b.speed*mul;
+    if(Math.abs(b.vy)<minVy){
+      var sg=b.vy===0?(this.eff.gravity>0?1:-1):Math.sign(b.vy);
+      b.vy=sg*minVy;
+      var cur2=Math.hypot(b.vx,b.vy);
+      var f2=(b.speed*mul)/cur2;b.vx*=f2;b.vy*=f2;
+    }
     this.audio.wall();
     this.addSpark(b.x,b.y,'#bae6fd',3);
   }
