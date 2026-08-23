@@ -930,33 +930,32 @@ NeoGame.prototype.drawBonusBar=function(ctx){
     }
   }
   if(active.length===0)return;
-  var slotW=34,barW=26,gap=6;
-  var totalW=active.length*(slotW+gap)-gap;
-  var x0=W/2-totalW/2;
-  var y0=H-70;
+  /* Discret : en haut à gauche sous le HUD, petit format */
+  var slotW=16,gap=4,barW=12;
+  var x0=LEFT+8;
+  var y0=52;
+  ctx.textAlign='center';ctx.textBaseline='middle';
   for(var j=0;j<active.length;j++){
     var a=active[j];
     var sx=x0+j*(slotW+gap);
     ctx.save();
-    ctx.shadowColor=a.c;ctx.shadowBlur=8;
+    ctx.globalAlpha=0.85;
+    ctx.shadowColor=a.c;ctx.shadowBlur=5;
     ctx.fillStyle=a.c;
-    rr(ctx,sx,y0,slotW,18,5);ctx.fill();
+    rr(ctx,sx,y0,slotW,slotW,3);ctx.fill();
     ctx.shadowBlur=0;
-    ctx.fillStyle='rgba(255,255,255,.3)';
-    rr(ctx,sx+2,y0+1,slotW-4,7,4);ctx.fill();
     ctx.fillStyle='#0b1226';
-    ctx.font='900 12px "Courier New",monospace';
-    ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(a.l,sx+slotW/2,y0+9);
+    ctx.font='900 9px "Courier New",monospace';
+    ctx.fillText(a.l,sx+slotW/2,y0+8);
     ctx.restore();
-    var barH=4;
-    var barX=sx+4;
-    var barY=y0+20;
+    var barH=2;
+    var barX=sx+2;
+    var barY=y0+slotW+1;
     var frac=clamp(a.val/a.max,0,1);
-    ctx.fillStyle='rgba(255,255,255,.18)';
-    rr(ctx,barX,barY,barW,barH,2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.15)';
+    rr(ctx,barX,barY,barW,barH,1);ctx.fill();
     ctx.fillStyle=a.c;
-    rr(ctx,barX,barY,barW*frac,barH,2);ctx.fill();
+    rr(ctx,barX,barY,barW*frac,barH,1);ctx.fill();
   }
 };
 NeoGame.prototype.hasStuck=function(){
