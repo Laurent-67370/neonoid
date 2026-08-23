@@ -740,7 +740,7 @@ NeoGame.prototype.drawBgPattern=function(ctx){
   ctx.save();
   switch(p){
     case 0: /* Niveau 1 — Vagues horizontales */
-      ctx.globalAlpha=0.05;
+      ctx.globalAlpha=0.13;
       ctx.strokeStyle=this.accent;ctx.lineWidth=1;
       for(var y=80;y<H;y+=40){
         ctx.beginPath();
@@ -752,7 +752,7 @@ NeoGame.prototype.drawBgPattern=function(ctx){
       }
       break;
     case 1: /* Niveau 2 — Grille de points */
-      ctx.globalAlpha=0.06;
+      ctx.globalAlpha=0.14;
       ctx.fillStyle=this.accent;
       for(var gx=LEFT+15;gx<RIGHT;gx+=30){
         for(var gy=TOP+15;gy<H-20;gy+=30){
@@ -761,14 +761,14 @@ NeoGame.prototype.drawBgPattern=function(ctx){
       }
       break;
     case 2: /* Niveau 3 — Cercles concentriques */
-      ctx.globalAlpha=0.04;
+      ctx.globalAlpha=0.12;
       ctx.strokeStyle=this.accent;ctx.lineWidth=1;
       for(var r=40;r<400;r+=45){
         ctx.beginPath();ctx.arc(W/2,H/2,r,0,7);ctx.stroke();
       }
       break;
     case 3: /* Niveau 4 — Briques stylisées */
-      ctx.globalAlpha=0.05;
+      ctx.globalAlpha=0.13;
       ctx.strokeStyle=this.accent;ctx.lineWidth=0.8;
       for(var by=TOP+10;by<H-30;by+=22){
         var offset=Math.floor((by-TOP)/22)%2;
@@ -778,7 +778,7 @@ NeoGame.prototype.drawBgPattern=function(ctx){
       }
       break;
     case 4: /* Niveau 5 — Hexagones */
-      ctx.globalAlpha=0.05;
+      ctx.globalAlpha=0.13;
       ctx.strokeStyle=this.accent;ctx.lineWidth=0.8;
       var hx=LEFT+12,hy=TOP+12;
       for(var hr=0;hr<14;hr++){
@@ -797,7 +797,7 @@ NeoGame.prototype.drawBgPattern=function(ctx){
       }
       break;
     case 5: /* Niveau 6 — Étoiles filantes */
-      ctx.globalAlpha=0.07;
+      ctx.globalAlpha=0.15;
       ctx.strokeStyle=this.accent;ctx.lineWidth=1;
       for(var si=0;si<8;si++){
         var sx=((si*97+t*30)%(W+60))-30;
@@ -806,7 +806,7 @@ NeoGame.prototype.drawBgPattern=function(ctx){
       }
       break;
     case 6: /* Niveau 7 — Ondes diagonales */
-      ctx.globalAlpha=0.05;
+      ctx.globalAlpha=0.13;
       ctx.strokeStyle=this.accent;ctx.lineWidth=1;
       for(var d=-H;d<W+H;d+=35){
         ctx.beginPath();
@@ -816,7 +816,7 @@ NeoGame.prototype.drawBgPattern=function(ctx){
       }
       break;
     case 7: /* Niveau 8 — Cristaux */
-      ctx.globalAlpha=0.05;
+      ctx.globalAlpha=0.13;
       ctx.strokeStyle=this.accent;ctx.lineWidth=0.8;
       for(var ci=0;ci<12;ci++){
         var cx2=LEFT+30+((ci*53)%(W-LEFT*2-60));
@@ -829,7 +829,7 @@ NeoGame.prototype.drawBgPattern=function(ctx){
       }
       break;
     case 8: /* Niveau 9 — Spirale */
-      ctx.globalAlpha=0.05;
+      ctx.globalAlpha=0.13;
       ctx.strokeStyle=this.accent;ctx.lineWidth=1;
       ctx.beginPath();
       for(var sp=0;sp<200;sp+=0.3){
@@ -843,7 +843,7 @@ NeoGame.prototype.drawBgPattern=function(ctx){
       ctx.stroke();
       break;
     case 9: /* Niveau 10 — Grille néon animée */
-      ctx.globalAlpha=0.04+0.03*Math.sin(t);
+      ctx.globalAlpha=0.12+0.06*Math.sin(t);
       ctx.strokeStyle=this.accent;ctx.lineWidth=0.8;
       for(var gx2=LEFT;gx2<=RIGHT;gx2+=20){
         ctx.beginPath();ctx.moveTo(gx2,TOP);ctx.lineTo(gx2,H);ctx.stroke();
@@ -854,7 +854,7 @@ NeoGame.prototype.drawBgPattern=function(ctx){
       break;
     default: /* Mode infini — pattern aléatoire */
       var rp=p%6;
-      ctx.globalAlpha=0.05;
+      ctx.globalAlpha=0.13;
       ctx.strokeStyle=this.accent;ctx.lineWidth=0.8;
       if(rp===0){
         for(var iy=TOP;iy<H;iy+=25){
