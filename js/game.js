@@ -17,11 +17,16 @@ var KINDS={
   SLOW:{c:'#38bdf8',l:'S',txt:'BALLE LENTE'},
   FAST:{c:'#facc15',l:'F',txt:'BALLE RAPIDE'},
   FIRE:{c:'#fb923c',l:'B',txt:'BOULE DE FEU'},
-  LIFE:{c:'#f472b6',l:'+',txt:'+1 VIE'}
+  LIFE:{c:'#f472b6',l:'+',txt:'+1 VIE'},
+  SHIELD:{c:'#fbbf24',l:'D',txt:'BOUCLIER'},
+  GRAVITY:{c:'#c084fc',l:'G',txt:'GRAVITÉ INVERSÉE'},
+  MEGABALL:{c:'#f472b6',l:'X',txt:'MÉGABALLE'}
 };
 var BAD={SHRINK:1,FAST:1};
-var POOL=[['EXPAND',20],['MULTI',16],['LASER',14],['CATCH',12],['SLOW',12],['FIRE',10],['LIFE',6],['SHRINK',5],['FAST',5]];
+var POOL=[['EXPAND',20],['MULTI',16],['LASER',14],['CATCH',12],['SLOW',12],['FIRE',10],['LIFE',6],['SHIELD',8],['GRAVITY',6],['MEGABALL',8],['SHRINK',5],['FAST',5]];
 var POOL_TOTAL=POOL.reduce(function(a,p){return a+p[1];},0);
+
+var MAX_DUR={expand:20,shrink:14,laser:12,catch:15,slow:10,fast:8,fire:9,shield:12,gravity:10,megaball:12};
 
 function rnd(a,b){return a+Math.random()*(b-a);}
 function clamp(v,a,b){return v<a?a:(v>b?b:v);}
@@ -48,6 +53,7 @@ function NeoGame(canvas,audio,hooks){
   this.hooks=hooks||{};
   this.state='title';
   this.paused=false;
+  this.difficulty='normal';
   this.score=0;this.nextLifeAt=10000;
   this.lives=3;this.levelIdx=0;this.combo=0;
   try{this.hi=+(localStorage.getItem('neonoid_hi')||0)||0;}catch(e){this.hi=0;}
@@ -67,9 +73,20 @@ function NeoGame(canvas,audio,hooks){
   requestAnimationFrame(this.loop.bind(this));
 }
 
-NeoGame.prototype.blankEff=function(){return{expand:0,shrink:0,laser:0,catch:0,slow:0,fast:0,fire:0};};
+NeoGame.prototype.blankEff=function(){return{expand:0,shrink:0,laser:0,catch:0,slow:0,fast:0,fire:0,shield:0,gravity:0,megaball:0};};
 
-NeoGame.prototype.speedBase=function(){return 330+this.levelIdx*14;};
+NeoGame.prototype.setDifficulty=function(level){
+  if(level==='easy'||level==='normal'||level==='hard'){
+    this.difficulty=level;
+  }
+};
+
+NeoGame.prototype.speedBase=function(){
+  var base=330+this.levelIdx*14;
+  if(this.difficulty==='easy')return base*0.85;
+  if(this.difficulty==='hard')return base*1.25;
+  return base;
+};
 
 NeoGame.prototype.loadLevel=function(idx){
   var def=window.LEVELS[idx];
@@ -103,16 +120,21 @@ NeoGame.prototype.loadLevel=function(idx){
   this.eff=this.blankEff();
   this.pus=[];this.lasers=[];this.parts=[];this.pops=[];
   this.combo=0;
-  this.paddle.w=96;this.paddle.tw=96;this.paddle.x=W/2;
+  var pw=this.difficulty==='easy'?120:(this.difficulty==='hard'?78:96);
+  this.paddle.w=pw;this.paddle.tw=pw;this.paddle.x=W/2;
 };
 
 NeoGame.prototype.makeBall=function(stuck){
-  return{x:this.paddle.x,y:this.paddle.y-10,vx:0,vy:0,r:7,speed:this.speedBase(),trail:[],stuck:stuck,stuckDX:0,fire:false,dead:false};
+  var r=this.eff.megaball>0?21:7;
+  return{x:this.paddle.x,y:this.paddle.y-10,vx:0,vy:0,r:r,speed:this.speedBase(),trail:[],stuck:stuck,stuckDX:0,fire:false,dead:false};
 };
 NeoGame.prototype.resetBall=function(stuck){this.balls=[this.makeBall(stuck)];};
 
 NeoGame.prototype.startGame=function(){
-  this.score=0;this.nextLifeAt=10000;this.lives=3;this.combo=0;
+  var d=this.difficulty;
+  var lives=d==='easy'?5:(d==='hard'?2:3);
+  var nextLife=d==='easy'?8000:(d==='hard'?12000:10000);
+  this.score=0;this.nextLifeAt=nextLife;this.lives=lives;this.combo=0;
   this.paused=false;
   this.loadLevel(0);
   this.resetBall(true);
@@ -163,7 +185,8 @@ NeoGame.prototype.movePaddle=function(dt){
   }else if(this.input.targetX!==null){
     p.x+=(this.input.targetX-p.x)*Math.min(1,dt*20);
   }
-  p.tw=this.eff.expand>0?150:(this.eff.shrink>0?62:96);
+  var pw=this.difficulty==='easy'?120:(this.difficulty==='hard'?78:96);
+  p.tw=this.eff.expand>0?pw*1.56:(this.eff.shrink>0?pw*0.65:pw);
   p.w+=(p.tw-p.w)*Math.min(1,dt*8);
   p.x=clamp(p.x,LEFT+p.w/2+4,RIGHT-p.w/2-4);
   p.pulse=Math.max(0,p.pulse-dt*4);
@@ -200,7 +223,18 @@ NeoGame.prototype.stepBall=function(b,dt){
     this.hitWalls(b);
     this.hitPaddle(b);
     this.hitBricks(b);
-    if(b.y>H+40){b.dead=true;return;}
+    if(b.y>H+40){
+      if(this.eff.shield>0){
+        b.y=H-14;
+        b.vy=-Math.abs(b.vy);
+        this.eff.shield=0;
+        this.audio.wall();
+        this.addSpark(b.x,H-14,'#fbbf24',10);
+        if(this.hooks.toast)this.hooks.toast('BOUCLIER ! ❤');
+      }else{
+        b.dead=true;return;
+      }
+    }
   }
   b.trail.push({x:b.x,y:b.y});
   if(b.trail.length>9){b.trail.shift();}
@@ -210,7 +244,11 @@ NeoGame.prototype.hitWalls=function(b){
   var hit=false;
   if(b.x-b.r<LEFT){b.x=LEFT+b.r;if(b.vx<0)b.vx=-b.vx;hit=true;}
   else if(b.x+b.r>RIGHT){b.x=RIGHT-b.r;if(b.vx>0)b.vx=-b.vx;hit=true;}
-  if(b.y-b.r<TOP){b.y=TOP+b.r;if(b.vy<0)b.vy=-b.vy;hit=true;}
+  if(this.eff.gravity>0){
+    if(b.y+b.r>H){b.y=H-b.r;if(b.vy>0)b.vy=-b.vy;hit=true;}
+  }else{
+    if(b.y-b.r<TOP){b.y=TOP+b.r;if(b.vy<0)b.vy=-b.vy;hit=true;}
+  }
   if(hit){
     this.audio.wall();
     this.addSpark(b.x,b.y,'#bae6fd',3);
@@ -219,12 +257,20 @@ NeoGame.prototype.hitWalls=function(b){
 
 NeoGame.prototype.hitPaddle=function(b){
   var p=this.paddle;
-  if(b.vy<=0)return;
+  if(this.eff.gravity>0){
+    if(b.vy>=0)return;
+  }else{
+    if(b.vy<=0)return;
+  }
   var nx=clamp(b.x,p.x-p.w/2,p.x+p.w/2);
   var ny=clamp(b.y,p.y-p.h/2,p.y+p.h/2);
   var dx=b.x-nx,dy=b.y-ny;
   if(dx*dx+dy*dy>b.r*b.r)return;
-  b.y=p.y-p.h/2-b.r-0.5;
+  if(this.eff.gravity>0){
+    b.y=p.y-p.h/2-b.r-0.5;
+  }else{
+    b.y=p.y-p.h/2-b.r-0.5;
+  }
   this.combo=0;
   p.pulse=1;
   if(this.eff.catch>0&&!b.fire){
@@ -235,7 +281,12 @@ NeoGame.prototype.hitPaddle=function(b){
   var rel=clamp((b.x-p.x)/(p.w/2),-1,1);
   var ang=rel*1.05;
   var s=b.speed*this.speedMul();
-  b.vx=Math.sin(ang)*s;b.vy=-Math.cos(ang)*s;
+  b.vx=Math.sin(ang)*s;
+  if(this.eff.gravity>0){
+    b.vy=Math.cos(ang)*s;
+  }else{
+    b.vy=-Math.cos(ang)*s;
+  }
   this.audio.paddle();
   this.addSpark(b.x,p.y-p.h/2,this.accent,5);
 };
@@ -266,17 +317,22 @@ NeoGame.prototype.hitBricks=function(b){
         if(ox<oy){b.vx=(dxc>0?1:-1)*Math.abs(b.vx);b.x=cx+(dxc>0?1:-1)*(brk.w/2+b.r+0.5);}
         else{b.vy=(dyc>0?1:-1)*Math.abs(b.vy);b.y=cy+(dyc>0?1:-1)*(brk.h/2+b.r+0.5);}
       }
-      this.damageBrick(brk,false);
+      var mega=this.eff.megaball>0&&brk.type!=='gold';
+      this.damageBrick(brk,false,mega);
       return;
     }
   }
 };
 
-NeoGame.prototype.damageBrick=function(brk,silent){
+NeoGame.prototype.damageBrick=function(brk,silent,mega){
   if(!brk.alive)return;
   if(brk.type==='gold'){
     if(!silent)this.audio.gold();
     this.addSpark(brk.x+brk.w/2,brk.y+brk.h/2,'#fde68a',6);
+    return;
+  }
+  if(mega){
+    this.destroyBrick(brk);
     return;
   }
   brk.hp--;
@@ -359,6 +415,17 @@ NeoGame.prototype.applyPower=function(kind){
       e.fire=9;
       for(var i=0;i<this.balls.length;i++)this.balls[i].fire=true;
       break;
+    case 'SHIELD':e.shield=12;break;
+    case 'GRAVITY':
+      e.gravity=10;
+      for(var j=0;j<this.balls.length;j++){
+        if(!this.balls[j].stuck)this.balls[j].vy*=-1;
+      }
+      break;
+    case 'MEGABALL':
+      e.megaball=12;
+      for(var k=0;k<this.balls.length;k++)this.balls[k].r=21;
+      break;
     case 'LIFE':
       this.lives=Math.min(this.lives+1,6);
       this.audio.life();
@@ -428,7 +495,7 @@ NeoGame.prototype.updateLasers=function(dt){
 NeoGame.prototype.clearEffects=function(){
   this.eff=this.blankEff();
   this.pus=[];this.lasers=[];
-  for(var i=0;i<this.balls.length;i++)this.balls[i].fire=false;
+  for(var i=0;i<this.balls.length;i++){this.balls[i].fire=false;this.balls[i].r=7;}
 };
 
 NeoGame.prototype.loseLife=function(){
@@ -458,7 +525,12 @@ NeoGame.prototype.beginClear=function(){
 
 NeoGame.prototype.nextLevel=function(){
   var next=this.levelIdx+1;
-  if(next>=window.LEVELS.length){this.winNow();return;}
+  if(next>=window.LEVELS.length){
+    if(typeof window.generateLevel==='function'){
+      var gen=window.generateLevel(next);
+      window.LEVELS.push(gen);
+    }else{this.winNow();return;}
+  }
   this.loadLevel(next);
   this.resetBall(true);
   this.state='playing';
@@ -491,12 +563,14 @@ NeoGame.prototype.addScore=function(n){
     try{localStorage.setItem('neonoid_hi',String(this.hi));}catch(e){}
   }
   if(this.score>=this.nextLifeAt){
-    this.nextLifeAt+=10000;
+    var step=this.difficulty==='easy'?8000:(this.difficulty==='hard'?12000:10000);
+    this.nextLifeAt+=step;
     if(this.lives<6){
       this.lives++;
       this.audio.life();
       this.addPopup('+1 VIE !',this.paddle.x,this.paddle.y-52,'#f472b6');
-      if(this.hooks.toast)this.hooks.toast('+1 VIE ❤ (10 000 pts)');
+      var stepMsg=this.difficulty==='easy'?8000:(this.difficulty==='hard'?12000:10000);
+      if(this.hooks.toast)this.hooks.toast('+1 VIE ❤ ('+stepMsg.toLocaleString('fr-FR')+' pts)');
     }
   }
   if(this.hooks.score){this.hooks.score(this.score);}
@@ -540,8 +614,12 @@ NeoGame.prototype.update=function(dt){
   switch(this.state){
     case 'playing':{
       var e=this.eff;
+      var prevMega=e.megaball;
+      var prevGrav=e.gravity;
       for(var k in e){if(e[k]>0)e[k]-=dt;}
       if(e.fire<=0){for(i=0;i<this.balls.length;i++)this.balls[i].fire=false;}
+      if(prevMega>0&&e.megaball<=0){for(i=0;i<this.balls.length;i++)this.balls[i].r=7;}
+      if(prevGrav>0&&e.gravity<=0){for(i=0;i<this.balls.length;i++){if(!this.balls[i].stuck)this.balls[i].vy*=-1;}}
       this.movePaddle(dt);
       for(i=0;i<this.balls.length;i++){
         var b=this.balls[i];
@@ -665,6 +743,21 @@ NeoGame.prototype.draw=function(){
   ctx.moveTo(LEFT,H);ctx.lineTo(LEFT,TOP);ctx.lineTo(RIGHT,TOP);ctx.lineTo(RIGHT,H);
   ctx.stroke();
   ctx.shadowBlur=0;
+  if(this.eff.gravity>0){
+    ctx.fillStyle='rgba(192,132,252,0.08)';
+    ctx.fillRect(0,0,W,H);
+  }
+  if(this.eff.shield>0){
+    var sa=0.5+0.5*Math.sin(this.t*6);
+    ctx.strokeStyle='#fbbf24';
+    ctx.shadowColor='#fbbf24';
+    ctx.shadowBlur=18+sa*10;
+    ctx.lineWidth=4;
+    ctx.beginPath();
+    ctx.moveTo(LEFT,H-3);ctx.lineTo(RIGHT,H-3);
+    ctx.stroke();
+    ctx.shadowBlur=0;
+  }
   for(i=0;i<this.bricks.length;i++){
     var brk=this.bricks[i];
     if(!brk.alive)continue;
@@ -715,11 +808,20 @@ NeoGame.prototype.draw=function(){
     }
     ctx.restore();
     ctx.save();
-    ctx.shadowColor=b.fire?'#fb923c':'#dbeafe';
-    ctx.shadowBlur=18;
-    ctx.fillStyle=b.fire?'#fdba74':'#eff6ff';
+    var mega=this.eff.megaball>0;
+    ctx.shadowColor=b.fire?'#fb923c':(mega?'#f472b6':'#dbeafe');
+    ctx.shadowBlur=mega?28:18;
+    ctx.fillStyle=b.fire?'#fdba74':(mega?'#fce7f3':'#eff6ff');
     ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();
     ctx.shadowBlur=0;
+    if(mega){
+      ctx.globalCompositeOperation='lighter';
+      ctx.globalAlpha=0.3;
+      ctx.fillStyle='#f472b6';
+      ctx.beginPath();ctx.arc(b.x,b.y,b.r*1.5,0,7);ctx.fill();
+      ctx.globalAlpha=1;
+      ctx.globalCompositeOperation='source-over';
+    }
     ctx.fillStyle='#ffffff';
     ctx.beginPath();ctx.arc(b.x-2,b.y-2,b.r*0.45,0,7);ctx.fill();
     ctx.restore();
@@ -755,7 +857,7 @@ NeoGame.prototype.drawPaddle=function(ctx){
   ctx.save();
   ctx.translate(p.x,p.y);
   ctx.scale(1+p.pulse*0.12,1-p.pulse*0.25);
-  var core=this.eff.laser>0?'#fb7185':(this.eff.catch>0?'#4ade80':(this.eff.expand>0?'#22d3ee':(this.eff.shrink>0?'#ef4444':this.accent)));
+  var core=this.eff.laser>0?'#fb7185':(this.eff.catch>0?'#4ade80':(this.eff.expand>0?'#22d3ee':(this.eff.shrink>0?'#ef4444':(this.eff.megaball>0?'#f472b6':(this.eff.gravity>0?'#c084fc':this.accent)))));
   ctx.shadowColor=core;ctx.shadowBlur=14;
   var g=ctx.createLinearGradient(0,-p.h/2,0,p.h/2);
   g.addColorStop(0,'#f8fafc');g.addColorStop(0.5,'#94a3b8');g.addColorStop(1,'#e2e8f0');
@@ -802,6 +904,48 @@ NeoGame.prototype.drawHUD=function(ctx){
     ctx.fillStyle='#bae6fd';
     ctx.fillText('ESPACE OU TAP POUR LANCER',W/2,H-110);
     ctx.globalAlpha=1;
+  }
+  this.drawBonusBar(ctx);
+};
+NeoGame.prototype.drawBonusBar=function(ctx){
+  var effOrder=['expand','shrink','laser','catch','slow','fast','fire','shield','gravity','megaball'];
+  var labelMap={expand:'EXPAND',shrink:'SHRINK',laser:'LASER',catch:'CATCH',slow:'SLOW',fast:'FAST',fire:'FIRE',shield:'SHIELD',gravity:'GRAVITY',megaball:'MEGABALL'};
+  var active=[];
+  for(var i=0;i<effOrder.length;i++){
+    var key=effOrder[i];
+    if(this.eff[key]>0){
+      var info=KINDS[labelMap[key]];
+      active.push({key:key,val:this.eff[key],max:MAX_DUR[key],c:info.c,l:info.l});
+    }
+  }
+  if(active.length===0)return;
+  var slotW=34,barW=26,gap=6;
+  var totalW=active.length*(slotW+gap)-gap;
+  var x0=W/2-totalW/2;
+  var y0=H-70;
+  for(var j=0;j<active.length;j++){
+    var a=active[j];
+    var sx=x0+j*(slotW+gap);
+    ctx.save();
+    ctx.shadowColor=a.c;ctx.shadowBlur=8;
+    ctx.fillStyle=a.c;
+    rr(ctx,sx,y0,slotW,18,5);ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle='rgba(255,255,255,.3)';
+    rr(ctx,sx+2,y0+1,slotW-4,7,4);ctx.fill();
+    ctx.fillStyle='#0b1226';
+    ctx.font='900 12px "Courier New",monospace';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(a.l,sx+slotW/2,y0+9);
+    ctx.restore();
+    var barH=4;
+    var barX=sx+4;
+    var barY=y0+20;
+    var frac=clamp(a.val/a.max,0,1);
+    ctx.fillStyle='rgba(255,255,255,.18)';
+    rr(ctx,barX,barY,barW,barH,2);ctx.fill();
+    ctx.fillStyle=a.c;
+    rr(ctx,barX,barY,barW*frac,barH,2);ctx.fill();
   }
 };
 NeoGame.prototype.hasStuck=function(){

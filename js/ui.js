@@ -20,6 +20,16 @@ function getScores(){
 function putScores(arr){
   try{localStorage.setItem('neonoid_scores',JSON.stringify(arr));}catch(e){}
 }
+/* Feature #4 : progression débloquée (localStorage) */
+function getUnlocked(){
+  try{var n=+(localStorage.getItem('neonoid_unlocked')||1)||1;return Math.max(1,Math.min(10,n));}catch(e){return 1;}
+}
+function setUnlocked(n){
+  try{
+    var cur=getUnlocked();
+    if(n>cur){localStorage.setItem('neonoid_unlocked',String(n));}
+  }catch(e){}
+}
 
 window.NEOUI={
   init:function(game,audio){
@@ -37,6 +47,22 @@ window.NEOUI={
     this.syncSound();
     this.show('scr-title');
     this.refreshBest();
+    /* Feature #4 : bouton "🎯 NIVEAUX" injecté dynamiquement
+       sur l'écran titre (avant btn-sound). */
+    var titleScreen=this.$('scr-title');
+    if(titleScreen&&!this.$('btn-levels')){
+      var btnLevels=document.createElement('button');
+      btnLevels.className='btn';
+      btnLevels.id='btn-levels';
+      btnLevels.textContent='🎯 NIVEAUX';
+      var refSound=this.$('btn-sound');
+      if(refSound){titleScreen.insertBefore(btnLevels,refSound);}
+      else{titleScreen.appendChild(btnLevels);}
+      var self2=this;
+      btnLevels.addEventListener('click',function(e){
+        self2.audio.ensure();self2.audio.click();self2.openLevelSelect();
+      });
+    }
   },
   bind:function(){
     var self=this,g=this.g,a=this.audio;
@@ -55,6 +81,18 @@ window.NEOUI={
     });
     wire('btn-scores-reset',function(){putScores([]);self.openScores(-1);});
     wire('btn-sound',function(){a.setMuted(!a.muted);self.syncSound();});
+    var diffBtns=document.querySelectorAll('.diff-btn');
+    for(var di=0;di<diffBtns.length;di++){
+      (function(btn){
+        btn.addEventListener('click',function(){
+          a.ensure();a.click();
+          var level=btn.getAttribute('data-diff');
+          g.setDifficulty(level);
+          for(var dj=0;dj<diffBtns.length;dj++){diffBtns[dj].classList.remove('active');}
+          btn.classList.add('active');
+        });
+      })(diffBtns[di]);
+    }
     wire('btn-resume',function(){g.togglePause(false);});
     wire('btn-quit',function(){g.toTitle();});
     wire('btn-replay',function(){g.startGame();self.show(null);});
@@ -155,6 +193,83 @@ window.NEOUI={
     putScores(list);
     var idx=list.indexOf(entry);
     this.openScores(idx);
+  },
+  /* ─────────────────────────────────────────────────────
+     Feature #4 : sélecteur de niveau (débloquer progressif)
+     ───────────────────────────────────────────────────── */
+  unlockLevel:function(idx){
+    /* idx = numéro de niveau accessible (0-based ou 1-based
+       selon l'appel). On stocke le nombre de niveaux débloqués. */
+    var n=(typeof idx==='number')?idx+1:1;
+    setUnlocked(n);
+  },
+  openLevelSelect:function(){
+    var self=this,g=this.g;
+    var unlocked=getUnlocked();
+    var existing=this.$('scr-levels');
+    if(existing){existing.parentNode.removeChild(existing);}
+    /* Crée un screen dynamique (même classe .screen pour que
+       show() le masque/affiche correctement). */
+    var scr=document.createElement('div');
+    scr.id='scr-levels';
+    scr.className='screen';
+    var title=document.createElement('h2');
+    title.textContent='🎯 CHOIX DU NIVEAU';
+    title.style.textAlign='center';
+    title.style.marginBottom='12px';
+    scr.appendChild(title);
+    var grid=document.createElement('div');
+    grid.style.cssText='display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:0 16px;max-width:420px;margin:0 auto;';
+    var nLevels=window.LEVELS.length;
+    for(var i=0;i<nLevels;i++){
+      (function(i){
+        var btn=document.createElement('button');
+        btn.className='btn';
+        var locked=(i>=unlocked);
+        btn.textContent=locked?('🔒 '+(i+1)):('▶ '+(i+1));
+        if(locked){btn.disabled=true;btn.style.opacity='0.4';btn.style.cursor='not-allowed';}
+        btn.addEventListener('click',function(){
+          g.startGame();
+          g.loadLevel(i);
+          g.resetBall(true);
+          if(g.hooks.level){g.hooks.level(window.LEVELS[i].name,i);}
+          g.state='playing';
+          g.audio.startMusic(i);
+          self.show(null);
+        });
+        grid.appendChild(btn);
+      })(i);
+    }
+    /* Ligne mode infini */
+    var infRow=document.createElement('div');
+    infRow.style.cssText='margin-top:14px;text-align:center;font-size:0.85em;opacity:0.7;';
+    infRow.textContent='∞ Niveaux '+nLevels+'+ générés aléatoirement (mode infini)';
+    scr.appendChild(grid);
+    scr.appendChild(infRow);
+    var back=document.createElement('button');
+    back.className='btn';
+    back.id='btn-levels-back';
+    back.textContent='← RETOUR';
+    back.style.cssText='margin:16px auto 0;display:block;';
+    back.addEventListener('click',function(){
+      self.show('scr-title');
+      self.refreshBest();
+    });
+    scr.appendChild(back);
+    document.body.appendChild(scr);
+    this.show('scr-levels');
+  },
+  /* ─────────────────────────────────────────────────────
+     Feature #3 : bonus de fin de niveau (vies + temps)
+     ───────────────────────────────────────────────────── */
+  levelBonus:function(lives,elapsedSec){
+    var timeBonus=Math.max(0,Math.floor(30-elapsedSec))*75;
+    var lifeBonus=(lives||0)*250;
+    var total=lifeBonus+timeBonus;
+    this.toast('BONUS FIN DE NIVEAU : +'+total.toLocaleString('fr-FR')+
+      ' (vies '+(lifeBonus).toLocaleString('fr-FR')+
+      ' + temps '+timeBonus.toLocaleString('fr-FR')+')');
+    return total;
   }
 };
 })();

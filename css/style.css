@@ -63,6 +63,18 @@ h2{margin:0;color:#bae6fd;letter-spacing:.12em;font-size:26px;text-shadow:0 0 18
 .btn.danger{border-color:rgba(248,113,113,.5)}
 .btn.danger:hover{box-shadow:0 0 18px rgba(248,113,113,.4);border-color:#f87171}
 #best-line{color:#fbbf24;font-weight:700;text-shadow:0 0 12px rgba(251,191,36,.5);margin:0;min-height:20px}
+.diff-select{display:flex;align-items:center;gap:8px;margin:0}
+.diff-label{font-size:11px;letter-spacing:.16em;color:#64748b;font-weight:700}
+.diff-btn{
+  cursor:pointer;padding:5px 14px;border-radius:999px;font-weight:800;font-size:11px;
+  letter-spacing:.1em;color:#94a3b8;background:rgba(15,23,42,.7);
+  border:1px solid rgba(99,179,237,.25);transition:all .15s;
+}
+.diff-btn:hover{color:#bae6fd;border-color:rgba(99,179,237,.5)}
+.diff-btn.active{
+  color:#e0f2fe;background:linear-gradient(135deg,#0ea5e9,#6366f1);
+  border-color:transparent;box-shadow:0 0 14px rgba(79,70,229,.45);
+}
 #tip{position:absolute;bottom:16px;left:0;right:0;color:#64748b;font-size:12.5px;padding:0 24px;margin:0}
 .help-box{
   max-width:88%;max-height:72%;overflow:auto;text-align:left;

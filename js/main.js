@@ -4,7 +4,10 @@ window.addEventListener('DOMContentLoaded',function(){
   var canvas=document.getElementById('game');
   var audio=new AudioFX();
   var game=new NeoGame(canvas,audio,{
-    level:function(name,idx){NEOUI.banner(String(idx+1),name);},
+    level:function(name,idx){
+      NEOUI.banner(String(idx+1),name);
+      NEOUI.unlockLevel(idx+1);   /* Feature #4 : débloquer le niveau suivant */
+    },
     end:function(res){NEOUI.end(res);},
     toast:function(msg){NEOUI.toast(msg);},
     pause:function(p){NEOUI.pauseShow(p);},
@@ -13,6 +16,27 @@ window.addEventListener('DOMContentLoaded',function(){
   NEOUI.init(game,audio);
   window.NEOGAME=game;
   window.NEOAUDIO=audio;
+
+  /* ─────────────────────────────────────────────────────
+     Feature #3 : Bonus de fin de niveau (vies + temps)
+     Monkey-patch de loadLevel (tracker le temps de début),
+     puis de beginClear (calculer le bonus et l'ajouter).
+     ───────────────────────────────────────────────────── */
+  var origLoadLevel=game.loadLevel.bind(game);
+  game.loadLevel=function(idx){
+    origLoadLevel(idx);
+    game.levelStartTime=performance.now();
+  };
+  var origBeginClear=game.beginClear.bind(game);
+  game.beginClear=function(){
+    origBeginClear();
+    if(typeof game.levelStartTime!=='number')return;
+    var elapsedSec=(performance.now()-game.levelStartTime)/1000;
+    var lives=game.lives||0;
+    var bonus=NEOUI.levelBonus(lives,elapsedSec);
+    game.addScore(bonus);
+    game.addPopup('BONUS +'+bonus.toLocaleString('fr-FR'),600/2,800/2-40,'#fde047');
+  };
 
   var stage=document.getElementById('stage');
 
