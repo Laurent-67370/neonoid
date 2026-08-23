@@ -2,7 +2,7 @@
 
 **Casse-briques néon — hommage à l'Amiga**
 
-Un jeu de casse-briques (Breakout/Arkanoid) au style néon synthwave, avec starfield, effets de lueur, combos, 10 bonus, 3 difficultés, mode infini et sélecteur de niveaux. Jouable au clavier, à la souris ou au tactile sur mobile.
+Un jeu de casse-briques (Breakout/Arkanoid) au style néon synthwave, avec starfield, effets de lueur, combos, 10 bonus, 3 difficultés, 21 niveaux, mode infini, fonds d'écran animés, musique synthwave générée et sélecteur de niveaux. Jouable au clavier, à la souris ou au tactile sur mobile.
 
 🎮 **Jouer :** [neonoid.lhusser.fr](https://neonoid.lhusser.fr) · [GitHub Pages](https://laurent-67370.github.io/neonoid/)
 
@@ -11,8 +11,10 @@ Un jeu de casse-briques (Breakout/Arkanoid) au style néon synthwave, avec starf
 ## ✨ Fonctionnalités
 
 ### Gameplay
-- **10 niveaux** uniques avec des motifs variés : damier, pyramide, donjon, envahisseur, galaxie, cœur, escaliers, cible, noyau final…
-- **Mode infini** — après les 10 niveaux, génération aléatoire de niveaux de plus en plus difficiles (damier, pyramide, vagues, colonnes, spiral, blocs dispersés)
+- **21 niveaux** uniques avec des motifs variés :
+  - Niveaux 1-10 : Premières lumières, Damier, Pyramide, Donjon, Envahisseur, Galaxie, Cœur, Escaliers, Cible, Noyau final
+  - Niveaux 11-21 : Arc-en-ciel, Pacman, Flipper, Labyrinthe, Montagne, Smiley, Croix, Circuit, Bulles, Damier géant, Cœur géant
+- **Mode infini** — après les 21 niveaux, génération aléatoire de niveaux de plus en plus difficiles (damier, pyramide, vagues, colonnes, spiral, blocs dispersés)
 - **10 bonus** (capsules à attraper) : palet élargi, multi-balles ×3, lasers, palet collant, balle ralentie, boule de feu, vie supplémentaire, **bouclier**, **gravité inversée**, **mégaballe**
 - **2 malus** : palet rétréci, balle accélérée
 - **Briques spéciales** : argentées (2-3 coups), dorées (indestructibles), explosives (chaîne)
@@ -24,12 +26,16 @@ Un jeu de casse-briques (Breakout/Arkanoid) au style néon synthwave, avec starf
   - **NORMAL** : vitesse normale, 3 vies, palet standard, vie tous les 10 000 pts
   - **DIFFICILE** : balle rapide, 2 vies, palet étroit, vie tous les 12 000 pts
 
+### Audio
+- **Musique synthwave générée** en temps réel (Web Audio API) — 3 progressions harmoniques qui changent par niveau, avec basse, mélodie, arpèges et drums (kick, snare, hi-hat). BPM qui accélère avec le niveau
+- **SFX améliorés** — harmoniques (double oscillateur), filtres biquad, bus séparés music/sfx
+
 ### Interface
-- **Indicateur de bonus actifs** — icônes colorées + barres de durée en bas du canvas, pour voir en temps réel combien de temps il reste pour chaque bonus
+- **Indicateur de bonus actifs** — icônes colorées + barres de durée en haut à gauche, pour voir en temps réel combien de temps il reste pour chaque bonus
+- **Fonds d'écran animés** — 10 patterns différents par niveau (vagues, grille de points, cercles concentriques, hexagones, étoiles filantes, spirale, cristaux, grille néon…) + patterns aléatoires en mode infini
 - **High scores** — top 5 avec nom du joueur (sauvegarde locale)
 - **Effets visuels néon** : starfield animé, trail de balle, particules d'explosion, lueur bloom, screen shake
-- **Audio** généré par Web Audio API (aucun fichier son requis)
-- **100% vanilla JS** — aucune dépendance, aucun build, ça tourne directement dans le navigateur
+- **100% vanilla JS** — aucune dépendance, aucun build, aucun fichier audio, ça tourne directement dans le navigateur
 
 ---
 
@@ -82,9 +88,9 @@ neonoid/
 ├── css/
 │   └── style.css     # Styles néon, écrans, boutons, sélecteur difficulté, animations
 ├── js/
-│   ├── audio.js      # Web Audio API — sons générés (rebonds, explosions, bonus, musique)
-│   ├── levels.js     # 10 niveaux + générateur de niveaux aléatoires (mode infini)
-│   ├── game.js       # Moteur du jeu (physique, collisions, briques, 10 bonus, particules, HUD)
+│   ├── audio.js      # Web Audio API — musique synthwave + SFX générés (harmoniques, filtres, drums)
+│   ├── levels.js     # 21 niveaux + générateur de niveaux aléatoires (mode infini)
+│   ├── game.js       # Moteur du jeu (physique, collisions, 10 bonus, fonds d'écran, particules, HUD)
 │   ├── ui.js         # Gestion des écrans, boutons, high scores, sélecteur de niveau, bonus fin de niveau
 │   └── main.js       # Point d'entrée, boucle de jeu, hooks, tracking temps par niveau
 ```
@@ -114,7 +120,7 @@ Auto-update toutes les 10 min via cron (`/opt/neonoid-update.sh`).
 
 - **HTML5 Canvas** 600×800
 - **Vanilla JavaScript** (ES5, aucune dépendance)
-- **Web Audio API** pour le son
+- **Web Audio API** pour la musique et les SFX (aucun fichier audio)
 - **localStorage** pour les high scores + progression des niveaux débloqués
 - Compatible mobile (viewport, touch events)
 
